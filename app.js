@@ -175,51 +175,6 @@ function closeModal() {
   document.body.style.overflow = "";
 }
 
-function readSuggestions() {
-  try {
-    return JSON.parse(localStorage.getItem("ozmep.suggestions") || "[]");
-  } catch {
-    return [];
-  }
-}
-
-function writeSuggestions(items) {
-  localStorage.setItem("ozmep.suggestions", JSON.stringify(items));
-}
-
-function renderInbox() {
-  const items = readSuggestions();
-  $("#inboxCount").textContent = String(items.length);
-  const list = $("#inboxList");
-  list.innerHTML = "";
-
-  if (!items.length) {
-    const li = document.createElement("li");
-    li.className = "msg";
-    li.innerHTML =
-      '<div class="muted">No suggestions yet. Drop one in the form.</div>';
-    list.append(li);
-    return;
-  }
-
-  for (const it of items.slice().reverse()) {
-    const li = document.createElement("li");
-    li.className = "msg";
-    const who = it.name ? it.name : "Anonymous";
-    const when = it.createdAt ? formatRelativeTime(it.createdAt) : "";
-    const meta = [it.email].filter(Boolean).join(" · ");
-    li.innerHTML = `
-      <div class="msg__top">
-        <div class="msg__who">${escapeHtml(who)}</div>
-        <div class="msg__when">${escapeHtml(when)}</div>
-      </div>
-      <div class="msg__text">${escapeHtml(it.message || "")}</div>
-      ${meta ? `<div class="msg__meta">${escapeHtml(meta)}</div>` : ""}
-    `;
-    list.append(li);
-  }
-}
-
 function escapeHtml(s) {
   return String(s)
     .replaceAll("&", "&amp;")
@@ -248,10 +203,14 @@ async function loadGifs() {
     }));
     state.filtered = [...state.gifs];
 
-    $("#statCount").textContent = String(state.gifs.length);
-    $("#statBuild").textContent = data?.builtAt
-      ? new Date(data.builtAt).toLocaleString()
-      : "—";
+    const statCount = $("#statCount");
+    if (statCount) statCount.textContent = String(state.gifs.length);
+    const statBuild = $("#statBuild");
+    if (statBuild) {
+      statBuild.textContent = data?.builtAt
+        ? new Date(data.builtAt).toLocaleString()
+        : "—";
+    }
 
     renderGallery();
     updateMeta();
@@ -298,28 +257,63 @@ function wireUi() {
   });
 
   // Suggestions
-  $("#suggestForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const item = {
-      name: String(fd.get("name") || "").trim(),
-      email: String(fd.get("email") || "").trim(),
-      message: String(fd.get("message") || "").trim(),
-      createdAt: new Date().toISOString(),
-    };
-    if (!item.message) return;
-    const items = readSuggestions();
-    items.push(item);
-    writeSuggestions(items);
-    e.currentTarget.reset();
-    renderInbox();
-    toast("Suggestion saved locally");
+  const suggestModal = $("#suggestModal");
+  const openSuggest = $("#openSuggest");
+  const suggestForm = $("#suggestForm");
+  const suggestSubmit = $("#suggestSubmit");
+
+  function openSuggestModal() {
+    if (!suggestModal) return;
+    suggestModal.hidden = false;
+    suggestModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    setTimeout(() => {
+      const ta = suggestModal.querySelector('textarea[name="message"]');
+      if (ta) ta.focus();
+    }, 0);
+  }
+
+  function closeSuggestModal() {
+    if (!suggestModal || suggestModal.hidden) return;
+    suggestModal.hidden = true;
+    suggestModal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  if (openSuggest) openSuggest.addEventListener("click", openSuggestModal);
+  if (suggestModal) {
+    suggestModal.addEventListener("click", (e) => {
+      const t = e.target;
+      if (t && t.dataset && t.dataset.close === "true") closeSuggestModal();
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeSuggestModal();
   });
 
-  $("#clearSuggestions").addEventListener("click", () => {
-    writeSuggestions([]);
-    renderInbox();
-    toast("Local inbox cleared");
+  if (suggestForm) suggestForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const message = String(fd.get("message") || "").trim();
+    if (!message) return;
+
+    if (suggestSubmit) {
+      suggestSubmit.disabled = true;
+      suggestSubmit.textContent = "Sending…";
+    }
+
+    // Simulate a real request/response cycle.
+    await new Promise((r) => setTimeout(r, 700));
+
+    e.currentTarget.reset();
+    closeSuggestModal();
+    toast("Thanks — sent.");
+
+    if (suggestSubmit) {
+      suggestSubmit.disabled = false;
+      suggestSubmit.textContent = "Send";
+    }
   });
 
   // Theme
@@ -339,6 +333,5 @@ function initPrefs() {
 
 initPrefs();
 wireUi();
-renderInbox();
 loadGifs();
 

@@ -112,7 +112,7 @@ a:hover{ text-decoration:underline }
 
 .hero{
   display:grid;
-  grid-template-columns: 1.2fr .8fr;
+  grid-template-columns: 1fr;
   gap: 16px;
   padding: 22px 0 18px;
 }
@@ -134,7 +134,7 @@ a:hover{ text-decoration:underline }
 .ctaRow{
   margin-top: 16px;
   display:grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
   align-items:stretch;
 }
@@ -380,62 +380,12 @@ a:hover{ text-decoration:underline }
   color: color-mix(in srgb, #ef4444 78%, var(--text));
 }
 
-.suggest{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  align-items:start;
-}
-@media (max-width: 760px){
-  .suggest{ grid-template-columns: 1fr; }
-}
-.suggest__actions{
-  display:flex;
-  gap: 10px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-
-.inbox{
-  border: 1px dashed var(--stroke);
-  border-radius: var(--radius);
-  padding: 12px;
-  background: color-mix(in srgb, var(--card) 70%, transparent);
-  min-height: 220px;
-}
-.inbox__head{
-  display:flex;
-  align-items:baseline;
-  justify-content:space-between;
-  margin-bottom: 8px;
-}
-.inbox__title{ font-weight: 800; letter-spacing:.01em }
-.inbox__meta{ color: var(--muted2); font-size: 13px }
-.inbox__list{
-  list-style:none;
-  padding:0;
-  margin:0;
+.suggestModal__form{
+  margin-top: 12px;
   display:flex;
   flex-direction:column;
-  gap: 10px;
+  gap: 12px;
 }
-.msg{
-  border: 1px solid var(--stroke);
-  border-radius: 14px;
-  padding: 10px;
-  background: color-mix(in srgb, var(--bg1) 64%, transparent);
-}
-.msg__top{
-  display:flex;
-  justify-content:space-between;
-  align-items:baseline;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-.msg__who{ font-weight: 750; font-size: 13px }
-.msg__when{ color: var(--muted2); font-size: 12px }
-.msg__text{ color: var(--muted); font-size: 13px; line-height:1.35; white-space: pre-wrap }
-.msg__meta{ color: var(--muted2); font-size: 12px; margin-top: 6px }
 
 .footer{
   padding: 22px 0 38px;
@@ -470,6 +420,9 @@ a:hover{ text-decoration:underline }
   background: color-mix(in srgb, var(--bg1) 78%, transparent);
   box-shadow: var(--shadow);
   overflow:hidden;
+}
+.modal__card--small{
+  width: min(640px, calc(100% - 22px));
 }
 .modal__close{
   position:absolute; top:10px; right:10px;
